@@ -2,7 +2,7 @@ name: JavaScript Tests (Pull Requests Only)
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main, develop ]
     paths:
       - 'authlib-javascript/**'
       - '!authlib-javascript/README.md'
