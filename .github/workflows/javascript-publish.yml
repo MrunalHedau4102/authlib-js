@@ -3,15 +3,8 @@ name: JavaScript - Test & Publish to npm
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'authlib-javascript/**'
-      - '!authlib-javascript/README.md'
-      - '!authlib-javascript/examples/**'
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - 'authlib-javascript/**'
-      - '!authlib-javascript/README.md'
 
 jobs:
   # ============================================================================

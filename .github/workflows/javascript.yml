@@ -3,14 +3,11 @@ name: JavaScript Tests (Pull Requests Only)
 on:
   push:
     branches: [ main, develop ]
-    paths:
-      - 'authlib-javascript/**'
-      - '!authlib-javascript/README.md'
   pull_request:
     branches: [ main, develop ]
     paths:
-      - 'authlib-javascript/**'
-      - '!authlib-javascript/README.md'
+      - '**'
+      - '!README.md'
 
 jobs:
   test:
