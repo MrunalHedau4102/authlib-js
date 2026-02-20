@@ -8,173 +8,126 @@ on:
     branches: [ main ]
 
 jobs:
-  # ============================================================================
-  # Test Job
-  # ============================================================================
+
+  # =========================
+  # TEST JOB
+  # =========================
   test:
     runs-on: ubuntu-latest
     name: Test AuthLib JavaScript
-    
+
     strategy:
       matrix:
-        node-version: [ 16.x, 18.x, 20.x ]
-    
+        node-version: [16.x, 18.x, 20.x]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      
+          cache: npm
+          cache-dependency-path: package-lock.json
+
       - name: Install dependencies
-        working-directory: ./authlib-javascript
         run: npm ci
-      
+
       - name: Run linter
-        working-directory: ./authlib-javascript
         run: |
-          if [ -f "package.json" ] && grep -q '"lint"' package.json; then
-            npm run lint || echo "⚠️  Linting optional"
+          if grep -q '"lint"' package.json; then
+            npm run lint || echo "⚠️ Lint warnings found"
           else
             echo "No lint script found"
           fi
-      
+
       - name: Run tests
-        working-directory: ./authlib-javascript
         run: npm test -- --coverage --detectOpenHandles
-      
+
       - name: Check coverage threshold
         if: matrix.node-version == '20.x'
-        working-directory: ./authlib-javascript
         continue-on-error: true
+        run: |
           COVERAGE=$(cat coverage/coverage-summary.json | grep '"lines"' | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
           echo "Coverage: ${COVERAGE}%"
           if (( $(echo "$COVERAGE < 75" | bc -l) )); then
-            echo "⚠️  Coverage below 75% threshold"
+            echo "⚠️ Coverage below 75% threshold"
           else
             echo "✅ Coverage meets threshold"
           fi
-      
+
       - name: Upload coverage to Codecov
         if: matrix.node-version == '20.x'
         uses: codecov/codecov-action@v3
         with:
-          files: ./authlib-javascript/coverage/lcov.info
+          files: ./coverage/lcov.info
           flags: javascript
           name: authlib-javascript
           fail_ci_if_error: false
-      
-      # - name: Archive test results
-      #   if: always()
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: javascript-coverage-node-${{ matrix.node-version }}
-      #     path: authlib-javascript/coverage/
-      #     retention-days: 30
 
-  # ============================================================================
-  # Security Check Job
-  # ============================================================================
+
+  # =========================
+  # SECURITY JOB
+  # =========================
   security:
     runs-on: ubuntu-latest
     name: Security Scan - JavaScript
     needs: test
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'npm'
-      
+          node-version: 20.x
+          cache: npm
+
       - name: Install dependencies
-        working-directory: ./authlib-javascript
         run: npm ci
-      
+
       - name: Run npm audit
-        working-directory: ./authlib-javascript
         continue-on-error: true
-        run: npm audit --audit-level=moderate || echo "⚠️  Npm audit warnings found"
-      
-      - name: Check for vulnerable dependencies
-        working-directory: ./authlib-javascript
-        run: npm audit fix --dry-run || echo "⚠️  Vulnerable dependencies found"
-  # ============================================================================
-  # Publish Job (Only on main branch with successful tests)
-  # ============================================================================
-  publish:release/manual trigger)
-  # ============================================================================
+        run: npm audit --audit-level=moderate || echo "⚠️ Audit warnings found"
+
+      - name: Dry run audit fix
+        run: npm audit fix --dry-run || echo "⚠️ Vulnerabilities detected"
+
+
+  # =========================
+  # PUBLISH JOB
+  # =========================
   publish:
     runs-on: ubuntu-latest
     name: Publish to npm
-    needs: [ test, security ]
+    needs: [test, security]
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
+
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
-      
-      - name: Check if version changed
-        working-directory: ./authlib-javascript
-        id: version
-        run: |
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Current version: $CURRENT_VERSION"
-      
+          node-version: 20.x
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
       - name: Install dependencies
-        working-directory: ./authlib-javascript
         run: npm ci
-      
+
       - name: Build package
-        working-directory: ./authlib-javascript
-        run: npm run build 2>/dev/null || echo "No build script"
-      
+        run: npm run build || echo "No build script"
+
       - name: Publish to npm
-        working-directory: ./authlib-javascript
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          npm publish --access public || echo "Already published or error"
-      
-      - name: Create Release
-        uses: actions/create-release@v1
-        if: success()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: authlib-javascript-${{ steps.version.outputs.current_version }}
-          release_name: AuthLib JavaScript v${{ steps.version.outputs.current_version }}
-          body: |
-            ## AuthLib JavaScript v${{ steps.version.outputs.current_version }}
-            
-            Published to npm: https://npmjs.com/package/authlib
-            
-            ### Changes
-            - See commit history for details
-            
-            ### Installation
-            ```bash
-            npm install authlib
-            ```
-          draft: false
-          prerelease: false
-      
-      - name: Notify Success
-        if: success()
-        run: |
-          echo "✅ Successfully published authlib v${{ steps.version.outputs.current_version }} to npm"
-          echo "📦 Package URL: https://npmjs.com/package/authlib"
+        run: npm publish --access public
+
+      - name: Success message
+        run: echo "✅ Package successfully published to npm"
