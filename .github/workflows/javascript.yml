@@ -56,13 +56,13 @@ jobs:
           name: javascript-coverage
           fail_ci_if_error: false
       
-      - name: Archive test results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: javascript-test-results-node-${{ matrix.node-version }}
-          path: authlib-javascript/coverage/
-          retention-days: 30
+      # - name: Archive test results
+      #   if: always()
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: javascript-test-results-node-${{ matrix.node-version }}
+      #     path: authlib-javascript/coverage/
+      #     retention-days: 30
 
   security:
     runs-on: ubuntu-latest
