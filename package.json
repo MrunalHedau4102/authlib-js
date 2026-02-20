@@ -28,7 +28,7 @@
   "author": "AuthLib Contributors",
   "license": "MIT",
   "dependencies": {
-    "jsonwebtoken": "^9.1.2",
+    "jsonwebtoken": "^9.0.2",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.3.1",
     "typeorm": "^0.3.17",
