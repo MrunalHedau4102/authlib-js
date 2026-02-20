@@ -1,0 +1,98 @@
+name: JavaScript Tests (Pull Requests Only)
+
+on:
+  push:
+    branches: [ develop ]
+    paths:
+      - 'authlib-javascript/**'
+      - '!authlib-javascript/README.md'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'authlib-javascript/**'
+      - '!authlib-javascript/README.md'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test AuthLib JavaScript
+    
+    strategy:
+      matrix:
+        node-version: [ 16.x, 18.x, 20.x ]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'authlib-javascript/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./authlib-javascript
+        run: npm ci
+      
+      - name: Run linter
+        working-directory: ./authlib-javascript
+        continue-on-error: true
+        run: |
+          if grep -q '"lint"' package.json; then
+            npm run lint
+          else
+            echo "ℹ️  No lint script configured"
+          fi
+      
+      - name: Run tests
+        working-directory: ./authlib-javascript
+        run: npm test -- --coverage --detectOpenHandles
+      
+      - name: Upload coverage to Codecov
+        if: matrix.node-version == '20.x'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./authlib-javascript/coverage/lcov.info
+          flags: javascript
+          name: javascript-coverage
+          fail_ci_if_error: false
+      
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: javascript-test-results-node-${{ matrix.node-version }}
+          path: authlib-javascript/coverage/
+          retention-days: 30
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Audit - JavaScript
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: 'authlib-javascript/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./authlib-javascript
+        run: npm ci
+      
+      - name: Run npm audit
+        working-directory: ./authlib-javascript
+        continue-on-error: true
+        run: npm audit --audit-level=moderate
+      
+      - name: Check for vulnerable dependencies
+        working-directory: ./authlib-javascript
+        continue-on-error: true
+        run: npm audit fix --dry-run

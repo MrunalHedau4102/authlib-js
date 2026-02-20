@@ -1,0 +1,58 @@
+{
+  "name": "authlib",
+  "version": "1.0.0",
+  "description": "A scalable, framework-agnostic JavaScript authentication library with JWT, user registration, login, and password reset",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --config jest.config.json",
+    "test:watch": "jest --config jest.config.json --watch",
+    "test:cov": "jest --config jest.config.json --coverage",
+    "test:integration": "jest --config jest.config.json src/integration.test.ts",
+    "dev": "ts-node -r dotenv/config examples/example.ts",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepublishOnly": "npm run build && npm run test",
+    "publish": "npm publish"
+  },
+  "keywords": [
+    "authentication",
+    "jwt",
+    "authorization",
+    "login",
+    "register",
+    "token",
+    "security"
+  ],
+  "author": "AuthLib Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "jsonwebtoken": "^9.1.2",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "typeorm": "^0.3.17",
+    "pg": "^8.11.3",
+    "mysql2": "^3.6.5",
+    "sqlite3": "^5.1.6",
+    "class-validator": "^0.14.0",
+    "class-transformer": "^0.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@types/jest": "^29.5.11",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/bcryptjs": "^2.4.6",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
+    "@typescript-eslint/parser": "^6.16.0",
+    "prettier": "^3.1.1"
+  },
+  "engine": {
+    "node": ">=18.0.0"
+  }
+}
