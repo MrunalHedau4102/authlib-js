@@ -1,13 +1,10 @@
-name: JavaScript Tests (Pull Requests Only)
+name: JavaScript Tests
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
-    paths:
-      - '**'
-      - '!README.md'
 
 jobs:
   test:
@@ -35,10 +32,9 @@ jobs:
       
       - name: Run linter
         working-directory: ./authlib-javascript
-        continue-on-error: true
         run: |
           if grep -q '"lint"' package.json; then
-            npm run lint
+            npm run lint || echo "⚠️  Linting optional"
           else
             echo "ℹ️  No lint script configured"
           fi
@@ -86,10 +82,8 @@ jobs:
       
       - name: Run npm audit
         working-directory: ./authlib-javascript
-        continue-on-error: true
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=moderate || echo "⚠️  Npm audit warnings found"
       
       - name: Check for vulnerable dependencies
         working-directory: ./authlib-javascript
-        continue-on-error: true
-        run: npm audit fix --dry-run
+        run: npm audit fix --dry-run || echo "⚠️  Vulnerable dependencies found"

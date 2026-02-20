@@ -1,10 +1,11 @@
 name: JavaScript - Test & Publish to npm
 
 on:
+  release:
+    types: [published]
+  workflow_dispatch:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   # ============================================================================
@@ -35,10 +36,9 @@ jobs:
       
       - name: Run linter
         working-directory: ./authlib-javascript
-        continue-on-error: true
         run: |
           if [ -f "package.json" ] && grep -q '"lint"' package.json; then
-            npm run lint
+            npm run lint || echo "⚠️  Linting optional"
           else
             echo "No lint script found"
           fi
@@ -51,7 +51,6 @@ jobs:
         if: matrix.node-version == '20.x'
         working-directory: ./authlib-javascript
         continue-on-error: true
-        run: |
           COVERAGE=$(cat coverage/coverage-summary.json | grep '"lines"' | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
           echo "Coverage: ${COVERAGE}%"
           if (( $(echo "$COVERAGE < 75" | bc -l) )); then
@@ -103,23 +102,21 @@ jobs:
       - name: Run npm audit
         working-directory: ./authlib-javascript
         continue-on-error: true
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=moderate || echo "⚠️  Npm audit warnings found"
       
       - name: Check for vulnerable dependencies
         working-directory: ./authlib-javascript
-        continue-on-error: true
-        run: npm audit fix --dry-run
-
+        run: npm audit fix --dry-run || echo "⚠️  Vulnerable dependencies found"
   # ============================================================================
   # Publish Job (Only on main branch with successful tests)
+  # ============================================================================
+  publish:release/manual trigger)
   # ============================================================================
   publish:
     runs-on: ubuntu-latest
     name: Publish to npm
     needs: [ test, security ]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
-    steps:
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/main' && github.event_name == 'push')
       - name: Checkout code
         uses: actions/checkout@v4
         with:
