@@ -108,14 +108,14 @@ export class AuthService {
       }
 
       // Update last login
-      await this.userService.updateLastLogin(user.id);
+      const updatedUser = await this.userService.updateLastLogin(user.id);
 
       // Generate tokens
       const tokens = this._generateTokens(user);
 
       return {
         success: true,
-        user: this._userToResponse(user),
+        user: this._userToResponse(updatedUser),
         ...tokens
       };
     } catch (error) {

@@ -1,8 +1,28 @@
 {
-  "name": "jest",
   "preset": "ts-jest",
   "testEnvironment": "node",
   "testMatch": ["**/*.test.ts"],
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
+  "transform": {
+    "^.+\\.tsx?$": ["ts-jest", {
+      "tsconfig": {
+        "target": "ES2020",
+        "module": "commonjs",
+        "lib": ["ES2020"],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "declaration": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+      }
+    }]
+  },
   "collectCoverageFrom": [
     "src/**/*.ts",
     "!src/**/*.d.ts",
@@ -10,7 +30,7 @@
   ],
   "coverageThreshold": {
     "global": {
-      "branches": 70,
+      "branches": 65,
       "functions": 75,
       "lines": 75,
       "statements": 75

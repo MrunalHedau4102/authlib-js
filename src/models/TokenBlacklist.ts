@@ -14,19 +14,19 @@ import {
 @Index('idx_token_blacklist_token', ['token'])
 export class TokenBlacklist {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ type: 'text' })
-  token: string;
+  token!: string;
 
   @Column({ type: 'integer' })
-  userId: number;
+  userId!: number;
 
-  @Column({ type: 'timestamp with time zone' })
-  expiresAt: Date;
+  @Column({ type: 'datetime' })
+  expiresAt!: Date;
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
-  blacklistedAt: Date;
+  @CreateDateColumn()
+  blacklistedAt!: Date;
 
   toJSON() {
     return {

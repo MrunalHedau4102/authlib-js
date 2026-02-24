@@ -16,47 +16,38 @@ import {
 @Index('idx_user_is_active', ['isActive'])
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({ type: 'varchar', length: 254, unique: true })
-  email: string;
+  email!: string;
 
   @Column({ type: 'varchar', length: 255 })
-  passwordHash: string;
+  passwordHash!: string;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  firstName: string | null;
+  firstName!: string | null;
 
   @Column({ type: 'varchar', length: 100, nullable: true })
-  lastName: string | null;
+  lastName!: string | null;
 
   @Column({ type: 'boolean', default: true })
-  isActive: boolean;
+  isActive!: boolean;
 
   @Column({ type: 'boolean', default: false })
-  isVerified: boolean;
+  isVerified!: boolean;
 
-  @CreateDateColumn({ type: 'timestamp with time zone' })
-  createdAt: Date;
+  @CreateDateColumn()
+  createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamp with time zone' })
-  updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt!: Date;
 
-  @Column({ type: 'timestamp with time zone', nullable: true })
-  lastLogin: Date | null;
+  @Column({ type: 'datetime', nullable: true })
+  lastLogin!: Date | null;
 
-  toJSON(): Omit<User, 'passwordHash'> & { passwordHash?: never } {
-    return {
-      id: this.id,
-      email: this.email,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      isActive: this.isActive,
-      isVerified: this.isVerified,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt,
-      lastLogin: this.lastLogin
-    };
+  toJSON() {
+    const { passwordHash, ...userWithoutPassword } = this;
+    return userWithoutPassword;
   }
 
   toString(): string {
