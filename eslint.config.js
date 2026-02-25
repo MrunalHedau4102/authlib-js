@@ -2,15 +2,16 @@ import tsParser from '@typescript-eslint/parser';
 
 export default [
   {
-    files: ['src/**/*.ts'],
-    ignores: ['node_modules', 'dist', '**/*.test.ts', 'coverage', 'src/**/*.test.ts'],
+    ignores: ['node_modules', 'dist', '**/*.test.ts', 'coverage']
+  },
+  {
+    files: ['src/**/*.ts', '!src/**/*.test.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: '2020',
         sourceType: 'module',
-        tsconfigRootDir: process.cwd(),
-        project: ['./tsconfig.json']
+        project: './tsconfig.json'
       },
       globals: {
         console: 'readonly',
@@ -23,13 +24,24 @@ export default [
     }
   },
   {
-    files: ['src/**/*.ts'],
-    ignores: ['src/**/*.test.ts'],
+    files: ['src/**/*.test.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
         ecmaVersion: '2020',
-        sourceType: 'module'
+        sourceType: 'module',
+        project: './tsconfig.json'
+      },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly'
       }
     },
     rules: {
